@@ -1,0 +1,125 @@
+.friends-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 4px;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-sm);
+    width: fit-content;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    transition: all var(--transition-fast);
+}
+
+.tab:hover {
+    color: var(--text-primary);
+}
+
+.tab.active {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.tab-count {
+    background: var(--bg-tertiary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.tab.active .tab-count {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.tab-count.pending {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+.friends-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.friend-skeleton {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+}
+
+.friends-empty {
+    text-align: center;
+    padding: 64px 24px;
+}
+
+.friends-empty-icon {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.friends-empty h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.friends-empty p {
+    color: var(--text-secondary);
+}
+
+.friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.friend-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+}
+
+.friend-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.friend-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.friend-name {
+    font-weight: 600;
+    font-size: 15px;
+    transition: color var(--transition-fast);
+}
+
+.friend-info:hover .friend-name {
+    color: var(--accent-primary);
+}
+
+.friend-username {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+}

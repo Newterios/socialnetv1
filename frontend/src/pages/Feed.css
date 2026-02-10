@@ -1,0 +1,91 @@
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.feed-posts {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.feed-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.post-skeleton {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 24px;
+}
+
+.skeleton-header {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.skeleton-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+
+.skeleton-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.skeleton-name {
+    width: 140px;
+    height: 16px;
+}
+
+.skeleton-date {
+    width: 80px;
+    height: 12px;
+}
+
+.skeleton-content {
+    height: 60px;
+    margin-bottom: 16px;
+}
+
+.skeleton-actions {
+    height: 32px;
+    width: 200px;
+}
+
+.feed-empty {
+    text-align: center;
+    padding: 64px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.feed-empty-icon {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.feed-empty h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.feed-empty p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
