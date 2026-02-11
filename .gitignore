@@ -1,0 +1,44 @@
+# Binaries
+/socialnet
+/socialnet.exe
+*.exe
+
+# Database
+/socialnet.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Duplicated subdirectory (to avoid recursive commit)
+/socnet-main/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+/frontend/node_modules/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Root package files (frontend has its own)
+/package-lock.json
+/package.json
+
+# Test binaries & coverage
+*.test
+*.out
+coverage.html
+coverage.txt

@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# Firebase/sensitive
+ADDED_DATA_FORGEMENI/
+*service-account*.json
+firebase-adminsdk*.json
+
+# Database
+*.db
+
+# Uploads
+uploads/
