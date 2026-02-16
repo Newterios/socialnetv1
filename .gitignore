@@ -42,3 +42,6 @@ node_modules/
 *.out
 coverage.html
 coverage.txt
+
+# Uploads
+uploads/
