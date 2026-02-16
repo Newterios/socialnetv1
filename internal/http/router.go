@@ -23,6 +23,7 @@ type Router struct {
 	authMiddleware *middleware.AuthMiddleware
 	rateLimiter    *middleware.RateLimiter
 	uploadDir      string
+	frontendDir    string
 }
 
 func NewRouter(
@@ -37,6 +38,7 @@ func NewRouter(
 	authMiddleware *middleware.AuthMiddleware,
 	rateLimiter *middleware.RateLimiter,
 	uploadDir string,
+	frontendDir string,
 ) *Router {
 	return &Router{
 		authHandler:    authHandler,
@@ -50,21 +52,22 @@ func NewRouter(
 		authMiddleware: authMiddleware,
 		rateLimiter:    rateLimiter,
 		uploadDir:      uploadDir,
+		frontendDir:    frontendDir,
 	}
 }
 
 func (rt *Router) Setup() http.Handler {
-	mux := http.NewServeMux()
+	apiMux := http.NewServeMux()
 
-	mux.HandleFunc("/register", rt.authHandler.Register)
-	mux.HandleFunc("/login", rt.authHandler.Login)
-	mux.HandleFunc("/auth/google", rt.authHandler.GoogleLogin)
-	mux.HandleFunc("/auth/password-requirements", rt.authHandler.GetPasswordRequirements)
+	apiMux.HandleFunc("/register", rt.authHandler.Register)
+	apiMux.HandleFunc("/login", rt.authHandler.Login)
+	apiMux.HandleFunc("/auth/google", rt.authHandler.GoogleLogin)
+	apiMux.HandleFunc("/auth/password-requirements", rt.authHandler.GetPasswordRequirements)
 
-	mux.Handle("/users/search", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.SearchUsers)))
-	mux.Handle("/users/", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.GetProfile)))
+	apiMux.Handle("/users/search", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.SearchUsers)))
+	apiMux.Handle("/users/", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.GetProfile)))
 
-	mux.Handle("/profile", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/profile", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPut:
 			rt.userHandler.UpdateProfile(w, r)
@@ -75,14 +78,14 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/profile/privacy", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.UpdatePrivacySettings)))
-	mux.Handle("/profile/emoji", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.SetEmojiAvatar)))
-	mux.Handle("/profile/status", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.UpdateOnlineStatus)))
+	apiMux.Handle("/profile/privacy", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.UpdatePrivacySettings)))
+	apiMux.Handle("/profile/emoji", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.SetEmojiAvatar)))
+	apiMux.Handle("/profile/status", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.UpdateOnlineStatus)))
 
-	mux.Handle("/emojis", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.GetEmojis)))
-	mux.Handle("/emojis/", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.GetUsersWithEmoji)))
+	apiMux.Handle("/emojis", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.GetEmojis)))
+	apiMux.Handle("/emojis/", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.userHandler.GetUsersWithEmoji)))
 
-	mux.Handle("/posts", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/posts", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			rt.postHandler.GetFeed(w, r)
@@ -93,7 +96,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/posts/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/posts/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			rt.postHandler.GetPost(w, r)
@@ -106,7 +109,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/likes/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/likes/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			rt.socialHandler.LikePost(w, r)
@@ -117,7 +120,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/comments/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/comments/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			rt.socialHandler.GetComments(w, r)
@@ -128,9 +131,9 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/friends", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.socialHandler.GetFriends)))
-	mux.Handle("/friends/requests", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.socialHandler.GetPendingRequests)))
-	mux.Handle("/friends/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/friends", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.socialHandler.GetFriends)))
+	apiMux.Handle("/friends/requests", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.socialHandler.GetPendingRequests)))
+	apiMux.Handle("/friends/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			rt.socialHandler.SendFriendRequest(w, r)
@@ -143,7 +146,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/conversations", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/conversations", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			rt.messageHandler.GetConversations(w, r)
@@ -154,7 +157,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/conversations/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/conversations/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		if strings.HasSuffix(path, "/messages") {
 			switch r.Method {
@@ -170,7 +173,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/groups", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/groups", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			rt.groupHandler.GetUserGroups(w, r)
@@ -181,7 +184,7 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/groups/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/groups/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 
 		if strings.HasSuffix(path, "/join") {
@@ -213,7 +216,7 @@ func (rt *Router) Setup() http.Handler {
 		rt.groupHandler.GetGroup(w, r)
 	})))
 
-	mux.Handle("/notifications", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/notifications", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			rt.notifHandler.GetNotifications(w, r)
@@ -221,21 +224,21 @@ func (rt *Router) Setup() http.Handler {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 	})))
-	mux.Handle("/notifications/clear", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/notifications/clear", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodDelete {
 			rt.notifHandler.ClearNotifications(w, r)
 		} else {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		}
 	})))
-	mux.Handle("/notifications/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/notifications/", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		if strings.HasSuffix(path, "/read") {
 			rt.notifHandler.MarkAsRead(w, r)
 		}
 	})))
 
-	mux.Handle("/reports", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/reports", rt.authMiddleware.Authenticate(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			rt.adminHandler.CreateReport(w, r)
@@ -246,12 +249,12 @@ func (rt *Router) Setup() http.Handler {
 		}
 	})))
 
-	mux.Handle("/reports/", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.ReviewReport))))
+	apiMux.Handle("/reports/", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.ReviewReport))))
 
-	mux.Handle("/admin/delete/", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.DeleteContent))))
-	mux.Handle("/admin/stats", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.GetStats))))
-	mux.Handle("/admin/grant", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.GrantAdmin))))
-	mux.Handle("/admin/broadcast", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	apiMux.Handle("/admin/delete/", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.DeleteContent))))
+	apiMux.Handle("/admin/stats", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.GetStats))))
+	apiMux.Handle("/admin/grant", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.GrantAdmin))))
+	apiMux.Handle("/admin/broadcast", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			rt.adminHandler.Broadcast(w, r)
@@ -262,15 +265,36 @@ func (rt *Router) Setup() http.Handler {
 		}
 	}))))
 
-	mux.Handle("/admin/broadcast/emoji/", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.BroadcastToEmoji))))
+	apiMux.Handle("/admin/broadcast/emoji/", rt.authMiddleware.Authenticate(rt.authMiddleware.RequireAdmin(http.HandlerFunc(rt.adminHandler.BroadcastToEmoji))))
 
-	mux.Handle("/upload", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.handleUpload)))
+	apiMux.Handle("/upload", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.handleUpload)))
 
+	// Top-level mux: /api → API, /uploads → static, everything else → SPA
+	topMux := http.NewServeMux()
+
+	// API routes under /api/ prefix
+	topMux.Handle("/api/", http.StripPrefix("/api", apiMux))
+
+	// Serve uploaded files
 	if rt.uploadDir != "" {
-		mux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(rt.uploadDir))))
+		topMux.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir(rt.uploadDir))))
 	}
 
-	return rt.rateLimiter.Limit(mux)
+	// SPA: serve frontend static files, fallback to index.html
+	if rt.frontendDir != "" {
+		topMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			// Try to serve the file directly
+			filePath := filepath.Join(rt.frontendDir, r.URL.Path)
+			if info, err := os.Stat(filePath); err == nil && !info.IsDir() {
+				http.ServeFile(w, r, filePath)
+				return
+			}
+			// Fallback to index.html for SPA routing
+			http.ServeFile(w, r, filepath.Join(rt.frontendDir, "index.html"))
+		})
+	}
+
+	return rt.rateLimiter.Limit(topMux)
 }
 
 func (rt *Router) handleUpload(w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,7 @@ type Config struct {
 	FirebaseKeyPath string
 	InitialAdmins   []string
 	UploadDir       string
+	FrontendDir     string
 }
 
 func Load() *Config {
@@ -34,6 +35,7 @@ func Load() *Config {
 		FirebaseKeyPath: getEnv("FIREBASE_KEY_PATH", ""),
 		InitialAdmins:   getStringSlice("INITIAL_ADMINS", []string{}),
 		UploadDir:       getEnv("UPLOAD_DIR", "./uploads"),
+		FrontendDir:     getEnv("FRONTEND_DIR", ""),
 	}
 }
 

@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext'
 import './Admin.css'
 
 const NAV_ITEMS = [
-    { id: 'stats', icon: '📊', label: 'Статистика' },
-    { id: 'reports', icon: '📋', label: 'Жалобы' },
-    { id: 'emoji', icon: '😊', label: 'Эмодзи' },
-    { id: 'broadcast', icon: '📢', label: 'Рассылка' },
-    { id: 'admins', icon: '🛡️', label: 'Админы' },
-    { id: 'groups', icon: '👥', label: 'Группы' },
+    { id: 'stats', icon: '📊', label: 'Statistics' },
+    { id: 'reports', icon: '📋', label: 'Reports' },
+    { id: 'emoji', icon: '😊', label: 'Emoji' },
+    { id: 'broadcast', icon: '📢', label: 'Broadcast' },
+    { id: 'admins', icon: '🛡️', label: 'Admins' },
+    { id: 'groups', icon: '👥', label: 'Groups' },
 ]
 
 export default function Admin() {
@@ -29,7 +29,6 @@ export default function Admin() {
     const [selectedEmoji, setSelectedEmoji] = useState(null)
     const [emojiBroadcastMessage, setEmojiBroadcastMessage] = useState('')
     const [expandedEmojis, setExpandedEmojis] = useState({})
-    // Groups state
     const [allGroups, setAllGroups] = useState([])
     const [newGroup, setNewGroup] = useState({ title: '', description: '' })
     const [creatingGroup, setCreatingGroup] = useState(false)
@@ -39,7 +38,6 @@ export default function Admin() {
         loadData()
     }, [user, filterStatus, activeTab])
 
-    // Auto-dismiss toast
     useEffect(() => {
         if (message) {
             const t = setTimeout(() => setMessage(''), 3500)
@@ -71,7 +69,7 @@ export default function Admin() {
                     break
             }
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка загрузки данных')
+            setMessage(err.response?.data?.error || 'Failed to load data')
         }
         setLoading(false)
     }
@@ -118,10 +116,10 @@ export default function Admin() {
         try {
             await groupsAPI.createGroup(newGroup)
             setNewGroup({ title: '', description: '' })
-            setMessage('Группа создана!')
+            setMessage('Group created!')
             await loadAllGroups()
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка создания группы')
+            setMessage(err.response?.data?.error || 'Failed to create group')
         }
         setCreatingGroup(false)
     }
@@ -132,12 +130,12 @@ export default function Admin() {
         setLoading(true)
         try {
             await adminAPI.broadcastToEmoji(selectedEmoji.id, emojiBroadcastMessage)
-            setMessage(`Рассылка отправлена ${selectedEmoji.count} пользователям с ${selectedEmoji.char}!`)
+            setMessage(`Broadcast sent to ${selectedEmoji.count} users with ${selectedEmoji.char}!`)
             setShowEmojiBroadcast(false)
             setEmojiBroadcastMessage('')
             setSelectedEmoji(null)
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка рассылки')
+            setMessage(err.response?.data?.error || 'Broadcast failed')
         }
         setLoading(false)
     }
@@ -146,9 +144,9 @@ export default function Admin() {
         try {
             await adminAPI.reviewReport(reportId, status)
             setReports(reports.filter((r) => r.id !== reportId))
-            setMessage('Жалоба обновлена')
+            setMessage('Report updated')
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка обновления')
+            setMessage(err.response?.data?.error || 'Update failed')
         }
     }
 
@@ -157,9 +155,9 @@ export default function Admin() {
             await adminAPI.deleteContent(report.target_type, report.target_id)
             await adminAPI.reviewReport(report.id, 'resolved')
             setReports(reports.filter((r) => r.id !== report.id))
-            setMessage('Контент удалён')
+            setMessage('Content deleted')
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка удаления')
+            setMessage(err.response?.data?.error || 'Delete failed')
         }
     }
 
@@ -170,11 +168,11 @@ export default function Admin() {
         try {
             await adminAPI.broadcast(broadcastMessage)
             setBroadcastMessage('')
-            setMessage('Рассылка отправлена всем пользователям!')
+            setMessage('Broadcast sent to all users!')
             const res = await adminAPI.getBroadcasts()
             setBroadcasts(res.data || [])
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка рассылки')
+            setMessage(err.response?.data?.error || 'Broadcast failed')
         }
         setLoading(false)
     }
@@ -186,7 +184,7 @@ export default function Admin() {
             const res = await usersAPI.searchUsers(searchQuery)
             setSearchResults(res.data || [])
         } catch {
-            setMessage('Ошибка поиска')
+            setMessage('Search failed')
         }
     }
 
@@ -196,9 +194,9 @@ export default function Admin() {
             setSearchResults(searchResults.map(u =>
                 u.id === userId ? { ...u, is_admin: true } : u
             ))
-            setMessage('Права админа выданы!')
+            setMessage('Admin rights granted!')
         } catch (err) {
-            setMessage(err.response?.data?.error || 'Ошибка')
+            setMessage(err.response?.data?.error || 'Error')
         }
     }
 
@@ -206,8 +204,8 @@ export default function Admin() {
         return (
             <div className="admin-page">
                 <div className="admin-denied">
-                    <h1>🚫 Доступ запрещён</h1>
-                    <p>У вас нет прав для доступа к этой странице.</p>
+                    <h1>🚫 Access Denied</h1>
+                    <p>You do not have permission to access this page.</p>
                 </div>
             </div>
         )
@@ -217,9 +215,8 @@ export default function Admin() {
 
     return (
         <div className="admin-page">
-            {/* Sidebar */}
             <aside className="admin-sidebar">
-                <div className="admin-sidebar-title">Админ-панель</div>
+                <div className="admin-sidebar-title">Admin Panel</div>
                 {NAV_ITEMS.map(item => (
                     <button
                         key={item.id}
@@ -232,7 +229,6 @@ export default function Admin() {
                 ))}
             </aside>
 
-            {/* Main Content */}
             <main className="admin-content">
                 {message && <div className="admin-toast">{message}</div>}
 
@@ -240,49 +236,47 @@ export default function Admin() {
                     <h2>{tabMeta?.icon} {tabMeta?.label}</h2>
                 </div>
 
-                {/* ── Statistics ── */}
                 {activeTab === 'stats' && stats && (
                     <div className="admin-stats-grid">
                         <div className="admin-stat-card">
-                            <h3>👤 Пользователи</h3>
+                            <h3>👤 Users</h3>
                             <span className="stat-value">{stats.total_users}</span>
                         </div>
                         <div className="admin-stat-card">
-                            <h3>🟢 Онлайн</h3>
+                            <h3>🟢 Online</h3>
                             <span className="stat-value">{stats.online_users}</span>
                         </div>
                         <div className="admin-stat-card">
-                            <h3>📝 Посты</h3>
+                            <h3>📝 Posts</h3>
                             <span className="stat-value">{stats.total_posts}</span>
                         </div>
                         <div className="admin-stat-card">
-                            <h3>👥 Группы</h3>
+                            <h3>👥 Groups</h3>
                             <span className="stat-value">{stats.total_groups}</span>
                         </div>
                         <div className="admin-stat-card">
-                            <h3>💬 Сообщения</h3>
+                            <h3>💬 Messages</h3>
                             <span className="stat-value">{stats.total_messages}</span>
                         </div>
                         <div className="admin-stat-card warning">
-                            <h3>⚠️ Жалобы</h3>
+                            <h3>⚠️ Reports</h3>
                             <span className="stat-value">{stats.pending_reports}</span>
                         </div>
                     </div>
                 )}
 
-                {/* ── Reports ── */}
                 {activeTab === 'reports' && (
                     <div className="admin-reports-section">
                         <div className="admin-filter-bar">
                             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                                <option value="pending">Ожидающие</option>
-                                <option value="reviewed">Просмотренные</option>
-                                <option value="resolved">Решённые</option>
+                                <option value="pending">Pending</option>
+                                <option value="reviewed">Reviewed</option>
+                                <option value="resolved">Resolved</option>
                             </select>
                         </div>
 
                         {reports.length === 0 ? (
-                            <p className="admin-empty-state">Нет жалоб со статусом «{filterStatus}»</p>
+                            <p className="admin-empty-state">No reports with status "{filterStatus}"</p>
                         ) : (
                             reports.map((report) => (
                                 <div key={report.id} className="admin-report-card">
@@ -292,13 +286,13 @@ export default function Admin() {
                                     </div>
                                     <p className="report-reason">{report.reason}</p>
                                     <p className="report-meta">
-                                        Автор жалобы: {report.reporter?.username || 'Неизвестно'} · {new Date(report.created_at).toLocaleString()}
+                                        Reported by: {report.reporter?.username || 'Unknown'} · {new Date(report.created_at).toLocaleString()}
                                     </p>
                                     {filterStatus === 'pending' && (
                                         <div className="report-actions">
-                                            <button onClick={() => handleReview(report.id, 'reviewed')}>Просмотрено</button>
-                                            <button onClick={() => handleReview(report.id, 'resolved')}>Отклонить</button>
-                                            <button className="danger-btn" onClick={() => handleDelete(report)}>Удалить контент</button>
+                                            <button onClick={() => handleReview(report.id, 'reviewed')}>Mark Reviewed</button>
+                                            <button onClick={() => handleReview(report.id, 'resolved')}>Dismiss</button>
+                                            <button className="danger-btn" onClick={() => handleDelete(report)}>Delete Content</button>
                                         </div>
                                     )}
                                 </div>
@@ -307,13 +301,12 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* ── Emoji Stats ── */}
                 {activeTab === 'emoji' && (
                     <div className="admin-emoji-section">
                         {loading ? (
-                            <p className="admin-empty-state">Загрузка...</p>
+                            <p className="admin-empty-state">Loading...</p>
                         ) : emojiStats.length === 0 ? (
-                            <p className="admin-empty-state">Нет данных</p>
+                            <p className="admin-empty-state">No data</p>
                         ) : (
                             <div className="admin-emoji-grid">
                                 {emojiStats.map((emoji) => (
@@ -329,7 +322,7 @@ export default function Admin() {
                                             <div className="admin-emoji-icon">{emoji.char}</div>
                                             <div className="admin-emoji-info">
                                                 <h4>{emoji.name}</h4>
-                                                <p>{emoji.count} пользовател{emoji.count === 1 ? 'ь' : 'ей'}</p>
+                                                <p>{emoji.count} {emoji.count === 1 ? 'user' : 'users'}</p>
                                             </div>
                                             <div className="admin-emoji-actions">
                                                 {emoji.count > 0 && (
@@ -343,7 +336,7 @@ export default function Admin() {
                                                                 }))
                                                             }}
                                                         >
-                                                            {expandedEmojis[emoji.id] ? 'Скрыть' : 'Пользователи'}
+                                                            {expandedEmojis[emoji.id] ? 'Hide' : 'Users'}
                                                         </button>
                                                         <button
                                                             className="btn-primary"
@@ -353,7 +346,7 @@ export default function Admin() {
                                                                 setShowEmojiBroadcast(true)
                                                             }}
                                                         >
-                                                            Рассылка
+                                                            Broadcast
                                                         </button>
                                                     </>
                                                 )}
@@ -361,7 +354,7 @@ export default function Admin() {
                                         </div>
                                         {expandedEmojis[emoji.id] && emoji.users?.length > 0 && (
                                             <div className="admin-emoji-users">
-                                                <h5>Пользователи с {emoji.char} {emoji.name}:</h5>
+                                                <h5>Users with {emoji.char} {emoji.name}:</h5>
                                                 <ul>
                                                     {emoji.users.map((u) => (
                                                         <li key={u.id || u.ID}>
@@ -381,30 +374,29 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* ── Broadcast ── */}
                 {activeTab === 'broadcast' && (
                     <div className="admin-broadcast-section">
                         <div className="admin-form-card">
                             <form onSubmit={handleBroadcast}>
                                 <div className="form-group">
-                                    <label>Отправить уведомление всем пользователям:</label>
+                                    <label>Send notification to all users:</label>
                                     <textarea
                                         value={broadcastMessage}
                                         onChange={(e) => setBroadcastMessage(e.target.value)}
-                                        placeholder="Введите сообщение рассылки..."
+                                        placeholder="Enter broadcast message..."
                                         rows={3}
                                     />
                                 </div>
                                 <button type="submit" className="admin-form-btn" disabled={loading || !broadcastMessage.trim()}>
-                                    {loading ? 'Отправка...' : '📤 Отправить рассылку'}
+                                    {loading ? 'Sending...' : '📤 Send Broadcast'}
                                 </button>
                             </form>
                         </div>
 
                         <div className="broadcast-history">
-                            <h3>История рассылок</h3>
+                            <h3>Broadcast History</h3>
                             {broadcasts.length === 0 ? (
-                                <p className="admin-empty-state">Рассылок пока нет</p>
+                                <p className="admin-empty-state">No broadcasts yet</p>
                             ) : (
                                 <div className="broadcast-list">
                                     {broadcasts.map((b) => (
@@ -419,7 +411,6 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* ── Manage Admins ── */}
                 {activeTab === 'admins' && (
                     <div className="admin-search-section">
                         <form className="admin-search-form" onSubmit={handleSearch}>
@@ -427,9 +418,9 @@ export default function Admin() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Поиск по имени пользователя..."
+                                placeholder="Search by username..."
                             />
-                            <button type="submit">🔍 Найти</button>
+                            <button type="submit">🔍 Search</button>
                         </form>
 
                         {searchResults.length > 0 && (
@@ -441,10 +432,10 @@ export default function Admin() {
                                             <span className="user-email">({u.email})</span>
                                         </div>
                                         {u.is_admin ? (
-                                            <span className="admin-badge">🛡️ Админ</span>
+                                            <span className="admin-badge">🛡️ Admin</span>
                                         ) : (
                                             <button className="admin-grant-btn" onClick={() => handleGrantAdmin(u.id)}>
-                                                Назначить админом
+                                                Grant Admin
                                             </button>
                                         )}
                                     </div>
@@ -454,40 +445,39 @@ export default function Admin() {
                     </div>
                 )}
 
-                {/* ── Groups ── */}
                 {activeTab === 'groups' && (
                     <div className="admin-groups-section">
                         <div className="admin-form-card">
                             <form onSubmit={handleCreateGroup}>
                                 <div className="form-group">
-                                    <label>Название группы</label>
+                                    <label>Group Name</label>
                                     <input
                                         type="text"
                                         value={newGroup.title}
                                         onChange={(e) => setNewGroup({ ...newGroup, title: e.target.value })}
-                                        placeholder="Введите название группы..."
+                                        placeholder="Enter group name..."
                                         required
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Описание</label>
+                                    <label>Description</label>
                                     <textarea
                                         value={newGroup.description}
                                         onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
-                                        placeholder="Описание группы (необязательно)..."
+                                        placeholder="Group description (optional)..."
                                         rows={3}
                                     />
                                 </div>
                                 <button type="submit" className="admin-form-btn" disabled={creatingGroup || !newGroup.title.trim()}>
-                                    {creatingGroup ? 'Создание...' : '➕ Создать группу'}
+                                    {creatingGroup ? 'Creating...' : '➕ Create Group'}
                                 </button>
                             </form>
                         </div>
 
                         <div className="admin-groups-list">
-                            <h3>Существующие группы ({allGroups.length})</h3>
+                            <h3>Existing Groups ({allGroups.length})</h3>
                             {allGroups.length === 0 ? (
-                                <p className="admin-empty-state">Групп пока нет</p>
+                                <p className="admin-empty-state">No groups yet</p>
                             ) : (
                                 allGroups.map((group) => (
                                     <div key={group.id} className="admin-group-item">
@@ -496,7 +486,7 @@ export default function Admin() {
                                             {group.description && <div className="admin-group-desc">{group.description}</div>}
                                         </div>
                                         <div className="admin-group-meta">
-                                            <div className="admin-group-members">{group.member_count || 0} участников</div>
+                                            <div className="admin-group-members">{group.member_count || 0} members</div>
                                             <div className="admin-group-date">
                                                 {group.created_at ? new Date(group.created_at).toLocaleDateString() : ''}
                                             </div>
@@ -509,24 +499,23 @@ export default function Admin() {
                 )}
             </main>
 
-            {/* Emoji Broadcast Modal */}
             {showEmojiBroadcast && selectedEmoji && (
                 <div className="modal-overlay" onClick={() => setShowEmojiBroadcast(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3>Рассылка пользователям {selectedEmoji.char}</h3>
-                        <p>Отправить уведомление {selectedEmoji.count} пользователям с эмодзи {selectedEmoji.name}</p>
+                        <h3>Broadcast to {selectedEmoji.char} Users</h3>
+                        <p>Send notification to {selectedEmoji.count} users with emoji {selectedEmoji.name}</p>
                         <form onSubmit={handleEmojiBroadcast}>
                             <textarea
                                 value={emojiBroadcastMessage}
                                 onChange={(e) => setEmojiBroadcastMessage(e.target.value)}
-                                placeholder="Введите сообщение..."
+                                placeholder="Enter message..."
                                 rows={4}
                                 required
                             />
                             <div className="modal-actions">
-                                <button type="button" onClick={() => setShowEmojiBroadcast(false)}>Отмена</button>
+                                <button type="button" onClick={() => setShowEmojiBroadcast(false)}>Cancel</button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
-                                    {loading ? 'Отправка...' : 'Отправить'}
+                                    {loading ? 'Sending...' : 'Send'}
                                 </button>
                             </div>
                         </form>

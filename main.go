@@ -102,7 +102,7 @@ func main() {
 	router := httpRouter.NewRouter(
 		authHandler, userHandler, postHandler, socialHandler,
 		messageHandler, groupHandler, notifHandler, adminHandler,
-		authMiddleware, rateLimiter, cfg.UploadDir,
+		authMiddleware, rateLimiter, cfg.UploadDir, cfg.FrontendDir,
 	)
 
 	notifWorker := worker.NewNotificationWorker(notifQueue, notifService)
